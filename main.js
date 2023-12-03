@@ -1,5 +1,5 @@
 // Modules to control application life and create native browser window
-const { app, BrowserWindow, screen } = require("electron");
+const { app, BrowserWindow, screen, ipcMain, Tray, Menu } = require("electron");
 const path = require("node:path");
 
 function createWindow() {
@@ -7,6 +7,7 @@ function createWindow() {
 
 	let display = screen.getPrimaryDisplay();
 	let height = display.bounds.height;
+	let tray;
 
 	const mainWindow = new BrowserWindow({
 		width: 150,
@@ -34,6 +35,11 @@ function createWindow() {
 		query: { daysRemaining: day }, // Pass daysRemaining as a query parameter
 	});
 
+	// Minimize the window
+	ipcMain.on("minimize-window", () => {
+		mainWindow.minimize();
+	});
+
 	mainWindow.on("blur", () => {
 		mainWindow.setBackgroundColor("#00000000");
 	});
@@ -41,6 +47,23 @@ function createWindow() {
 	mainWindow.on("focus", () => {
 		mainWindow.setBackgroundColor("#00000000");
 	});
+
+	// Create a tray icon
+	tray = new Tray(path.join(__dirname, "icon.png"));
+	const contextMenu = Menu.buildFromTemplate([
+		{
+			label: "Quit",
+			click: () => {
+				app.quit();
+			},
+		},
+	]);
+
+	tray.setToolTip("Menorah.js");
+	tray.on("click", () => {
+		mainWindow.show();
+	});
+	tray.setContextMenu(contextMenu);
 
 	// Open the DevTools.
 	// mainWindow.webContents.openDevTools()

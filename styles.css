@@ -2,3 +2,13 @@ img{
     -webkit-app-region: drag;
     mix-blend-mode: multiply;
 }
+
+#minimizeButton {
+    position: absolute;
+    top: 90px;
+    right: 140px;
+    cursor: pointer;
+    color: gold;
+    opacity: 0.5;
+    font-size: 10px;
+  }

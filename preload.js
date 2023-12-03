@@ -13,4 +13,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
 		const params = new URLSearchParams(window.location.search);
 		return parseInt(params.get("daysRemaining"));
 	},
+	minimizeWindow: () => {
+		ipcRenderer.send("minimize-window");
+	},
 });

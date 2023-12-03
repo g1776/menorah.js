@@ -11,7 +11,7 @@ function calculateFlameXPosition(night) {
 	const candleSpacing = 6;
 	const menorahWidth = document.getElementById("menorah-image").width;
 
-	let pos = -6; // Adjust for the menorah's padding
+	let pos = -5; // Adjust for the menorah's padding
 
 	// If night is -1, then we're calculating the shamash's position
 	if (night === -1) {
@@ -37,8 +37,10 @@ function addFlame(night) {
 	flameImage.style.position = "absolute";
 	flameImage.style.top = "14px";
 	flameImage.style.left = calculateFlameXPosition(night) + "px";
-	flameImage.width = "15";
+	flameImage.width = "12";
 	flameImage.height = "17";
+	// set a transpareny to the gif
+	flameImage.style.opacity = 0.7;
 
 	// shamash
 	if (night === -1) {
@@ -50,6 +52,12 @@ function addFlame(night) {
 }
 
 window.onload = () => {
+	// Add event listeners for the minimize buttons
+	const minimizeButton = document.getElementById("minimizeButton");
+	minimizeButton.addEventListener("click", () => {
+		window.electronAPI.minimizeWindow();
+	});
+
 	const day = window.electronAPI.getDaysRemaining();
 	const menorahImage = document.getElementById("menorah-image");
 
