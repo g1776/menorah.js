@@ -1,3 +1,4 @@
-/* styles.css */
-
-/* Add styles here to customize the appearance of your app */
+img{
+    -webkit-app-region: drag;
+    mix-blend-mode: multiply;
+}
