@@ -26,18 +26,15 @@ function createWindow() {
 		y: height - 155,
 	});
 
-	const today = new Date();
-	const december7 = new Date(today.getFullYear(), 11, 7); // Month is 0-based (0 = January)
-	const timeDifference = today.getTime() - december7.getTime();
-	const day = Math.ceil(timeDifference / (1000 * 3600 * 24));
-
-	mainWindow.loadFile("index.html", {
-		query: { daysRemaining: day }, // Pass daysRemaining as a query parameter
-	});
+	mainWindow.loadFile("index.html");
 
 	// Minimize the window
 	ipcMain.on("minimize-window", () => {
 		mainWindow.minimize();
+	});
+
+	ipcMain.on("get-country-code", () => {
+		mainWindow.webContents.send("country-code", app.getLocaleCountryCode());
 	});
 
 	mainWindow.on("blur", () => {

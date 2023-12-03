@@ -13,8 +13,7 @@ function calculateFlameXPosition(night) {
 
 	let pos = -5; // Adjust for the menorah's padding
 
-	// If night is -1, then we're calculating the shamash's position
-	if (night === -1) {
+	if (night === "shamash") {
 		return pos + menorahWidth - (candleWidth + candleSpacing) * 4;
 	}
 
@@ -32,7 +31,7 @@ function addFlame(night) {
 	const flameImage = document.createElement("img");
 
 	// Set attributes for the flame image
-	flameImage.id = "flame-image";
+	flameImage.id = `flame-image-${night}`;
 	flameImage.src = "flame.gif";
 	flameImage.style.position = "absolute";
 	flameImage.style.top = "14px";
@@ -42,8 +41,7 @@ function addFlame(night) {
 	// set a transpareny to the gif
 	flameImage.style.opacity = 0.7;
 
-	// shamash
-	if (night === -1) {
+	if (night === "shamash") {
 		flameImage.style.top = "6px";
 	}
 
@@ -51,27 +49,71 @@ function addFlame(night) {
 	document.body.appendChild(flameImage);
 }
 
-window.onload = () => {
+async function getNightOfHanukkah() {
+	const ISO3166CountryCode = await window.electronAPI.getCountryCode();
+	const today = new Date();
+	const year = today.getFullYear();
+
+	try {
+		const response = await fetch(
+			`https://api.api-ninjas.com/v1/holidays?country=${ISO3166CountryCode}&year=${year}&type=jewish_holiday`,
+			{
+				headers: {
+					"X-Api-Key": "dbQhvyA2gG3S2V2cXzU1lQ==8yecJLcLlPTigmJ5", // Replace with your actual API key
+				},
+			}
+		);
+		const data = await response.json();
+		const hanukkah = data.find((holiday) => holiday.name.toLowerCase().includes("hanukkah"));
+		const firstNightOfHanukkah = new Date(hanukkah.date);
+
+		const timeDifference = today.getTime() - firstNightOfHanukkah.getTime();
+		const nightNumber = Math.ceil(timeDifference / (1000 * 3600 * 24));
+
+		return nightNumber;
+	} catch (error) {
+		alert(error);
+		return 0; // Or handle the error appropriately
+	}
+}
+
+async function drawMenorah() {
+	// remove all flames. Where a flame is any img tag with an id of flame-image-*
+	const flames = document.querySelectorAll("img[id^='flame-image-']");
+	for (let i = 0; i < flames.length; i++) {
+		flames[i].remove();
+	}
+
+	// calculate the day to determine how many candles to show and light
+	const day = await getNightOfHanukkah();
+	alert(day);
+
+	// Set the menorah image (includes the candles, but not animated flames)
+	const menorahImage = document.getElementById("menorah-image");
+	if (day >= 1) {
+		menorahImage.src = `menorahs/menorah${day}.png`; // Adjust the file extension as needed
+	} else {
+		menorahImage.src = "menorahs/menorah1.png"; // show the first night's menorah, but without any flames
+	}
+
+	// Add the flames
+	if (day > 0) {
+		addFlame("shamash");
+		for (let i = 0; i < day; i++) {
+			addFlame(i);
+		}
+	}
+}
+
+window.onload = async () => {
 	// Add event listeners for the minimize buttons
 	const minimizeButton = document.getElementById("minimizeButton");
 	minimizeButton.addEventListener("click", () => {
 		window.electronAPI.minimizeWindow();
 	});
 
-	const day = window.electronAPI.getDaysRemaining();
-	const menorahImage = document.getElementById("menorah-image");
+	await drawMenorah();
 
-	// Set the src attribute of the image dynamically
-	if (day >= 1) {
-		menorahImage.src = `menorahs/menorah${day}.png`; // Adjust the file extension as needed
-	} else {
-		menorahImage.src = "menorahs/menorah1.png"; // Provide a default image if daysRemaining is zero or negative
-	}
-
-	// shamash
-	addFlame(-1);
-
-	for (let i = 0; i < day; i++) {
-		addFlame(i);
-	}
+	// refresh the menorah every 24 hours
+	setInterval(async () => await drawMenorah(), 1000 * 60 * 60 * 24);
 };

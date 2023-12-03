@@ -9,11 +9,15 @@
 const { contextBridge, ipcRenderer } = require("electron");
 
 contextBridge.exposeInMainWorld("electronAPI", {
-	getDaysRemaining: () => {
-		const params = new URLSearchParams(window.location.search);
-		return parseInt(params.get("daysRemaining"));
-	},
 	minimizeWindow: () => {
 		ipcRenderer.send("minimize-window");
+	},
+	getCountryCode: () => {
+		return new Promise((resolve, reject) => {
+			ipcRenderer.once("country-code", (_, countryCode) => {
+				resolve(countryCode);
+			});
+			ipcRenderer.send("get-country-code");
+		});
 	},
 });
